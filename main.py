@@ -173,6 +173,14 @@ def simular(n_dias, prob_cercano, prob_intermedio, prob_lejano,
     return filas_rango, ultima_fila[0] if ultima_fila else None, estadisticas
 
 
+# ── Helper ──────────────────────────────────────────────────────────────────
+def seg_y_min(seg):
+    """Devuelve '108.22 seg  (1 min 48.22 seg)'"""
+    minutos = int(seg // 60)
+    resto   = seg - minutos * 60
+    return f"{seg} seg  ({minutos} min {resto:.2f} seg)"
+
+
 class App:
     def __init__(self, root):
         self.root = root
@@ -201,17 +209,17 @@ class App:
         self.prob_extra_var = tk.DoubleVar(value=round(PROB_PARADA_EXTRA, 4))
         self.media_extra_var = tk.DoubleVar(value=MEDIA_EXTRA_SEG)
 
-        self.t_prom_var = tk.StringVar(value="–")
+        self.t_prom_var           = tk.StringVar(value="–")
         self.pct_cartel_extra_var = tk.StringVar(value="–")
-        self.cnt_sin_var = tk.StringVar(value="–")
-        self.t_max_var = tk.StringVar(value="–")
-        self.t_min_var = tk.StringVar(value="–")
-        self.pct_bloqueo_var = tk.StringVar(value="–")
-        self.t_prom_cercano_var = tk.StringVar(value="–")
-        self.t_prom_lejano_var = tk.StringVar(value="–")
-        self.pct_sec_cercano_var = tk.StringVar(value="–")
-        self.pct_sec_inter_var = tk.StringVar(value="–")
-        self.pct_sec_lejano_var = tk.StringVar(value="–")
+        self.cnt_sin_var          = tk.StringVar(value="–")
+        self.t_max_var            = tk.StringVar(value="–")
+        self.t_min_var            = tk.StringVar(value="–")
+        self.pct_bloqueo_var      = tk.StringVar(value="–")
+        self.t_prom_cercano_var   = tk.StringVar(value="–")
+        self.t_prom_lejano_var    = tk.StringVar(value="–")
+        self.pct_sec_cercano_var  = tk.StringVar(value="–")
+        self.pct_sec_inter_var    = tk.StringVar(value="–")
+        self.pct_sec_lejano_var   = tk.StringVar(value="–")
 
         self.df_resultado = None
 
@@ -219,14 +227,14 @@ class App:
         nb.pack(fill="both", expand=True, padx=8, pady=8)
         self.nb = nb
 
-        self.tab_config = ttk.Frame(nb)
-        self.tab_tabla = ttk.Frame(nb)
-        self.tab_kpi = ttk.Frame(nb)
+        self.tab_config   = ttk.Frame(nb)
+        self.tab_tabla    = ttk.Frame(nb)
+        self.tab_kpi      = ttk.Frame(nb)
         self.tab_graficos = ttk.Frame(nb)
 
-        nb.add(self.tab_config, text="⚙ Configuración")
-        nb.add(self.tab_tabla, text="Tabla de Simulación")
-        nb.add(self.tab_kpi, text="Resultados / KPIs")
+        nb.add(self.tab_config,   text="⚙ Configuración")
+        nb.add(self.tab_tabla,    text="Tabla de Simulación")
+        nb.add(self.tab_kpi,      text="Resultados / KPIs")
         nb.add(self.tab_graficos, text="Gráficos")
 
         self._build_config_tab()
@@ -325,29 +333,36 @@ class App:
 
     def _build_kpi_tab(self):
         tab = self.tab_kpi
+
         requeridos = ttk.LabelFrame(tab, text="KPIs Requeridos por la Consigna")
         requeridos.pack(fill="x", padx=10, pady=8)
         for r, (lbl, var) in enumerate([
-            ("1. Tiempo promedio de estacionamiento (seg):", self.t_prom_var),
+            ("1. Tiempo promedio de estacionamiento:", self.t_prom_var),
             ("2. % Jornadas con detención en panel Y parada extra:", self.pct_cartel_extra_var),
             ("3. Jornadas SIN detención en panel NI parada extra:", self.cnt_sin_var),
-            ("4. Tiempo MÁXIMO de estacionamiento (seg):", self.t_max_var),
-            ("5. Tiempo MÍNIMO de estacionamiento (seg):", self.t_min_var),
+            ("4. Tiempo MÁXIMO de estacionamiento:", self.t_max_var),
+            ("5. Tiempo MÍNIMO de estacionamiento:", self.t_min_var),
         ]):
-            ttk.Label(requeridos, text=lbl, width=55, anchor="w").grid(row=r, column=0, sticky="w", padx=8, pady=4)
-            ttk.Label(requeridos, textvariable=var, font=("", 10, "bold"), foreground="#005580").grid(row=r, column=1, padx=8, pady=4, sticky="w")
+            ttk.Label(requeridos, text=lbl, width=55, anchor="w").grid(
+                row=r, column=0, sticky="w", padx=8, pady=4)
+            ttk.Label(requeridos, textvariable=var, font=("", 10, "bold"),
+                      foreground="#005580").grid(row=r, column=1, padx=8, pady=4, sticky="w")
+
         extras = ttk.LabelFrame(tab, text="KPIs Adicionales (propuestos por el grupo)")
         extras.pack(fill="x", padx=10, pady=8)
         for r, (lbl, var) in enumerate([
             ("6. % Jornadas con bloqueo de cuadra:", self.pct_bloqueo_var),
-            ("7. Tiempo promedio sector Cercano (seg):", self.t_prom_cercano_var),
-            ("8. Tiempo promedio sector Lejano (seg):", self.t_prom_lejano_var),
+            ("7. Tiempo promedio sector Cercano:", self.t_prom_cercano_var),
+            ("8. Tiempo promedio sector Lejano:", self.t_prom_lejano_var),
             ("   % Jornadas en sector Cercano:", self.pct_sec_cercano_var),
             ("   % Jornadas en sector Intermedio:", self.pct_sec_inter_var),
             ("   % Jornadas en sector Lejano:", self.pct_sec_lejano_var),
         ]):
-            ttk.Label(extras, text=lbl, width=55, anchor="w").grid(row=r, column=0, sticky="w", padx=8, pady=4)
-            ttk.Label(extras, textvariable=var, font=("", 10, "bold"), foreground="#005500").grid(row=r, column=1, padx=8, pady=4, sticky="w")
+            ttk.Label(extras, text=lbl, width=55, anchor="w").grid(
+                row=r, column=0, sticky="w", padx=8, pady=4)
+            ttk.Label(extras, textvariable=var, font=("", 10, "bold"),
+                      foreground="#005500").grid(row=r, column=1, padx=8, pady=4, sticky="w")
+
         ley = ttk.LabelFrame(tab, text="Leyenda de columnas clave")
         ley.pack(fill="x", padx=10, pady=8)
         leyenda = (
@@ -361,11 +376,13 @@ class App:
             "RND_Parada_Extra → define si hay parada extra (<60/250 = SÍ)\n"
             "RND_Exp          → usado en inversa Exponencial para tiempo extra (media=80s)"
         )
-        ttk.Label(ley, text=leyenda, justify="left", font=("Courier", 9)).pack(padx=8, pady=6, anchor="w")
+        ttk.Label(ley, text=leyenda, justify="left", font=("Courier", 9)).pack(
+            padx=8, pady=6, anchor="w")
 
     def _build_graficos_tab(self):
         tab = self.tab_graficos
-        self.fig, self.axs = plt.subplots(1, 3, figsize=(14, 5))
+        # CAMBIO: solo 2 gráficos (se eliminó el gráfico 2 de torta)
+        self.fig, self.axs = plt.subplots(1, 2, figsize=(10, 5))
         self.canvas_graf = FigureCanvasTkAgg(self.fig, master=tab)
         self.canvas_graf.get_tk_widget().pack(fill="both", expand=True)
         self.fig.tight_layout(pad=3)
@@ -375,7 +392,6 @@ class App:
             ax.clear()
 
         # ── Gráfico 1: Distribución de sectores ──────────────────────────────
-        # FIX: ylim dinámico (antes tenía ylim fijo en 60, cortaba el sector Cercano al 70%)
         sectores = ["Cercano", "Intermedio", "Lejano"]
         pcts = [estadisticas["pct_sector_cercano"],
                 estadisticas["pct_sector_intermedio"],
@@ -384,72 +400,41 @@ class App:
                         edgecolor="#888", linewidth=0.8)
         self.axs[0].set_title("Distribución de Sectores (%)", fontsize=10, fontweight="bold")
         self.axs[0].set_ylabel("%")
-        self.axs[0].set_ylim(0, max(pcts) * 1.25)   # ← CORRECCIÓN PRINCIPAL
+        self.axs[0].set_ylim(0, max(pcts) * 1.25)
         for i, v in enumerate(pcts):
             self.axs[0].text(i, v + max(pcts) * 0.03, f"{v:.1f}%", ha="center", fontsize=9)
         for ref in [25, 50, 75]:
             if ref < max(pcts) * 1.25:
                 self.axs[0].axhline(ref, color="gray", linestyle="--", linewidth=0.5, alpha=0.5)
 
-        # ── Gráfico 2: Composición promedio del tiempo total (torta) ─────────
-        # Muestra cuántos segundos aporta cada componente al tiempo total promedio
-        df = self.df_resultado
-        if df is not None:
-            t_base   = df["T_Base_Cuadras(s)"].mean()
-            t_panel  = df["T_Detencion(s)"].mean()
-            t_extra  = df["T_Extra(s)"].mean()
-            neto_blq = np.where(df["Hay_Bloqueo"] == "Sí",
-                                df["T_Bloqueo_Extra(s)"] - df["T_Circulacion(s)"], 0).mean()
-            neto_blq = max(neto_blq, 0)
-
-            vals2    = [t_base, t_panel, neto_blq, t_extra]
-            # FIX: etiquetas con los segundos reales para que sea legible
-            labels2  = [f"Recorrido Base\n{t_base:.1f}s",
-                        f"Detención Panel\n{t_panel:.1f}s",
-                        f"Bloqueo Neto\n{neto_blq:.1f}s",
-                        f"Parada Extra\n{t_extra:.1f}s"]
-            colors2  = ["#FFAE80", "#ACF4F4", "#FADADD", "#B9A3E3"]
-            wedges, texts, autotexts = self.axs[1].pie(
-                vals2, labels=labels2, autopct="%1.1f%%",
-                colors=colors2, startangle=90,
-                wedgeprops={"edgecolor": "white", "linewidth": 1})
-            for at in autotexts:
-                at.set_fontsize(8)
-            for t in texts:
-                t.set_fontsize(8)
-            self.axs[1].set_title(
-                "Composición Promedio del Tiempo Total\n(cada porción = segundos promedio aportados)",
-                fontsize=9, fontweight="bold")
-
-        # ── Gráfico 3: Eventos — parámetros vs resultados ────────────────────
-        # FIX: se distingue visualmente qué es parámetro fijado y qué es resultado simulado
+        # ── Gráfico 2 (antes gráfico 3): Eventos — parámetros vs resultados ──
         eventos = ["Detención\nPanel",
-                    "Parada\nExtra",
-                    "Bloqueo\nCuadra",
-                    "Panel\n+ Extra"]
+                   "Parada\nExtra",
+                   "Bloqueo\nCuadra",
+                   "Panel\n+ Extra"]
         vals3   = [self.prob_cartel_var.get() * 100,
                    self.prob_extra_var.get() * 100,
-                    estadisticas["pct_bloqueo"],
-                    estadisticas["pct_cartel_y_extra"]]
-        colores3 = ["#ACF4F4", "#ACF4F4", "#B4E1D0", "#B4E1D0"] 
-        self.axs[2].bar(eventos, vals3, color=colores3, edgecolor="#888", linewidth=0.8)
-        self.axs[2].set_title(
+                   estadisticas["pct_bloqueo"],
+                   estadisticas["pct_cartel_y_extra"]]
+        colores3 = ["#ACF4F4", "#ACF4F4", "#B4E1D0", "#B4E1D0"]
+        self.axs[1].bar(eventos, vals3, color=colores3, edgecolor="#888", linewidth=0.8)
+        self.axs[1].set_title(
             "% de Ocurrencia de Eventos\n(azul = parámetro ingresado | verde = resultado simulado)",
             fontsize=9, fontweight="bold")
-        self.axs[2].set_ylabel("%")
-        self.axs[2].set_ylim(0, max(vals3) * 1.25)
+        self.axs[1].set_ylabel("%")
+        self.axs[1].set_ylim(0, max(vals3) * 1.25)
         for i, v in enumerate(vals3):
             etiqueta = "↑ param." if i < 2 else "← sim."
-            self.axs[2].text(i, v + max(vals3) * 0.03,
-                            f"{v:.1f}%\n{etiqueta}", ha="center", fontsize=7.5)
+            self.axs[1].text(i, v + max(vals3) * 0.03,
+                             f"{v:.1f}%\n{etiqueta}", ha="center", fontsize=7.5)
 
         self.fig.tight_layout(pad=3)
         self.canvas_graf.draw()
 
     def ejecutar(self):
-        n = self.n_dias_var.get()
+        n      = self.n_dias_var.get()
         semilla = self.semilla_var.get()
-        fila_i = self.fila_inicio_var.get()
+        fila_i  = self.fila_inicio_var.get()
 
         p_c = self.prob_cercano_var.get()
         p_i = self.prob_intermedio_var.get()
@@ -488,14 +473,15 @@ class App:
 
         self._cargar_tabla(filas_rango, ultima_fila)
 
-        self.t_prom_var.set(f"{stats['t_promedio']} seg  ({stats['t_promedio']/60:.2f} min)")
+        # CAMBIO: todos los tiempos muestran seg + (X min Y seg)
+        self.t_prom_var.set(seg_y_min(stats['t_promedio']))
         self.pct_cartel_extra_var.set(f"{stats['pct_cartel_y_extra']} %")
         self.cnt_sin_var.set(f"{stats['cnt_sin_cartel_sin_extra']} jornadas")
-        self.t_max_var.set(f"{stats['tiempo_max']} seg  ({stats['tiempo_max']/60:.2f} min)")
-        self.t_min_var.set(f"{stats['tiempo_min']} seg  ({stats['tiempo_min']/60:.2f} min)")
+        self.t_max_var.set(seg_y_min(stats['tiempo_max']))
+        self.t_min_var.set(seg_y_min(stats['tiempo_min']))
         self.pct_bloqueo_var.set(f"{stats['pct_bloqueo']} %")
-        self.t_prom_cercano_var.set(f"{stats['t_prom_cercano']} seg")
-        self.t_prom_lejano_var.set(f"{stats['t_prom_lejano']} seg")
+        self.t_prom_cercano_var.set(seg_y_min(stats['t_prom_cercano']))
+        self.t_prom_lejano_var.set(seg_y_min(stats['t_prom_lejano']))
         self.pct_sec_cercano_var.set(f"{stats['pct_sector_cercano']} %")
         self.pct_sec_inter_var.set(f"{stats['pct_sector_intermedio']} %")
         self.pct_sec_lejano_var.set(f"{stats['pct_sector_lejano']} %")
